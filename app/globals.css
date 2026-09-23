@@ -1,0 +1,170 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #0A1C29;
+  --color-1: #FEFEFE;
+  --color-2: #0A1C29;
+  --color-3: #C8A375;
+  --color-4: #B5854A;
+  --color-5: #0B1D2B;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+
+body {
+  background: #ffffff;
+  color: var(--foreground);
+  overflow-x: hidden;
+}
+
+
+input, textarea, select {
+  color: #0A1C29;
+}
+
+/* ── Custom Phone Input ── */
+.custom-phone-input {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  overflow: visible;
+  transition: border-color 0.15s;
+  background: #fff;
+  direction: ltr;
+}
+.custom-phone-input:focus-within {
+  border-color: #B5854A;
+}
+.custom-phone-input.phone-error {
+  border-color: #fca5a5;
+  background: #fff5f5;
+}
+.custom-phone-input .PhoneInputCountry {
+  display: contents;
+}
+.custom-phone-input .PhoneInputInput {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: #0A1C29;
+  background: transparent;
+  font-family: monospace;
+  min-width: 0;
+}
+.custom-phone-input .PhoneInputInput::placeholder {
+  color: #d1d5db;
+  font-family: inherit;
+}
+@media (max-width: 639px) {
+  .custom-phone-input .PhoneInputInput { font-size: 13px; padding: 8px 10px; }
+}
+
+/* country dropdown — no scrollbar */
+.country-dropdown {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.country-dropdown::-webkit-scrollbar { display: none; }
+
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+.scrollbar-visible::-webkit-scrollbar { height: 6px; }
+.scrollbar-visible::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+.scrollbar-visible::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.scrollbar-visible::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+.scrollbar-visible { scrollbar-width: thin; scrollbar-color: #cbd5e1 #f1f5f9; }
+
+/* ── Product Card ── */
+.card-shadow {
+  box-shadow:
+    0 1px 2px rgba(0,0,0,0.03),
+    0 4px 12px rgba(0,0,0,0.05),
+    0 12px 32px rgba(0,0,0,0.04);
+}
+
+/* ── Cart Button ── */
+.cart-btn {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  background: #ffffff;
+  color: #B5854A;
+  font-weight: 800;
+  font-size: 0.78rem;
+  letter-spacing: 0.025em;
+  padding: 11px 0;
+  border-radius: 14px;
+  border: 1.5px solid #B5854A;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+@media (min-width: 640px) {
+  .cart-btn { font-size: 0.82rem; padding: 12px 0; }
+}
+.cart-btn:hover {
+  background: #B5854A;
+  color: #ffffff;
+}
+.cart-btn:active {
+  background: #B5854A;
+  color: #ffffff;
+}
+.cart-btn.added {
+  background: #B5854A;
+  color: #ffffff;
+  border-color: #B5854A;
+}
+
+@keyframes fade-in-down {
+  from { opacity: 0; transform: translateY(-16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-down { animation: fade-in-down 0.3s ease; }
+
+/* Swiper reviews pagination */
+.swiper-pagination-bullet {
+  background: var(--color-4);
+  opacity: 1;
+  width: 8px;
+  height: 8px;
+}
+.swiper-pagination-bullet-active {
+  background: var(--color-4);
+  width: 22px;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+@keyframes fade-in-out {
+  0%   { opacity: 0; transform: translateY(8px); }
+  10%  { opacity: 1; transform: translateY(0); }
+  90%  { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-8px); }
+}
+.animate-fade-in-out { animation: fade-in-out 3s ease; }
+
+/* Telecom logos scroll */
+@keyframes scroll-logos {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-scroll-logos {
+  animation: scroll-logos 18s linear infinite;
+  will-change: transform;
+}
+.animate-scroll-logos:hover {
+  animation-play-state: paused;
+}
+
+
