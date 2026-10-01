@@ -106,11 +106,9 @@ export default async function RootLayout({
   const company = await getCompanyData();
   return (
     <html lang="ar" dir="rtl">
-      <head>
+      <body className={`${cairo.className} antialiased`} suppressHydrationWarning>
         <TikTokPixel />
         <SnapPixel />
-      </head>
-      <body className={`${cairo.className} antialiased`} suppressHydrationWarning>
         <ClientLayout footer={<Footer company={company} />} whatsapp={company.whatsapp}>
           {children}
         </ClientLayout>
