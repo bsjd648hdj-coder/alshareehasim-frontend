@@ -106,6 +106,20 @@ export default async function RootLayout({
   const company = await getCompanyData();
   return (
     <html lang="ar" dir="rtl">
+      <head>
+        {/* Google Ads Tag */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18484617025" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'AW-18484617025');
+            `,
+          }}
+        />
+      </head>
       <body className={`${cairo.className} antialiased`} suppressHydrationWarning>
         <TikTokPixel />
         <SnapPixel />
