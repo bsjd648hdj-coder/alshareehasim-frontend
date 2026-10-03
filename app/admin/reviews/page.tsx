@@ -139,6 +139,14 @@ export default function ReviewsPage() {
   const [saving, setSaving] = useState(false);
   const [commentPopup, setCommentPopup] = useState<string | null>(null);
 
+  async function revalidateReviews() {
+    try {
+      await fetch("/api/revalidate?tag=reviews", { method: "POST" });
+    } catch {
+      // non-critical — cache will expire on its own
+    }
+  }
+
   useEffect(() => {
     apiFetch("/api/admin/reviews/all", { credentials: "include" })
       .then((r) => r.json())
@@ -155,6 +163,7 @@ export default function ReviewsPage() {
     if (!res.ok) return toast.error("حدث خطأ");
     setReviews((prev) => prev.map((r) => r._id === id ? { ...r, approved: data.approved } : r));
     toast.success(data.approved ? "تم إظهاره في الرئيسية ✅" : "تم إخفاؤه من الرئيسية");
+    revalidateReviews();
   }
 
   async function remove(id: string) {
@@ -163,6 +172,7 @@ export default function ReviewsPage() {
     if (!res.ok) return toast.error("حدث خطأ");
     toast.success("تم حذف التعليق ✅");
     setReviews((prev) => prev.filter((r) => r._id !== id));
+    revalidateReviews();
   }
 
   function openEdit(r: Review) {
@@ -185,6 +195,7 @@ export default function ReviewsPage() {
     setReviews((prev) => prev.map((r) => r._id === updated._id ? updated : r));
     setEditReview(null);
     toast.success("تم التعديل ✅");
+    revalidateReviews();
   }
 
   async function saveAdd() {
@@ -202,6 +213,7 @@ export default function ReviewsPage() {
     setShowAddForm(false);
     setAddForm(emptyForm);
     toast.success("تم إضافة التعليق ✅");
+    revalidateReviews();
   }
 
   const filtered = reviews.filter(
