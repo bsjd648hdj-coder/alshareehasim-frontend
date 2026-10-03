@@ -142,7 +142,10 @@ export default function ReviewsPage() {
   useEffect(() => {
     apiFetch("/api/admin/reviews/all", { credentials: "include" })
       .then((r) => r.json())
-      .then((data) => { if (Array.isArray(data)) setReviews(data); })
+      .then((data) => {
+        if (Array.isArray(data)) setReviews(data);
+        else if (data?.reviews && Array.isArray(data.reviews)) setReviews(data.reviews);
+      })
       .finally(() => setLoading(false));
   }, []);
 
