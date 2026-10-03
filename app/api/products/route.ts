@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   if (category) params.set("category", category);
   try {
     const res = await fetch(`${getBackend()}/api/products?${params.toString()}`, {
-      next: { revalidate: 180, tags: ["products"] },
+      next: { revalidate: 3600, tags: ["products"] },
       signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) {
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(data, {
       status: 200,
       headers: {
-        "Cache-Control": "public, s-maxage=180, stale-while-revalidate=360",
+        "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
       },
     });
   } catch {

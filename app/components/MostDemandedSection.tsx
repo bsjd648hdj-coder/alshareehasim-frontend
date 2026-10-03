@@ -18,7 +18,7 @@ function topByBrand(products: Product[], brandPattern: RegExp, count: number): P
 async function getMostDemanded(): Promise<Product[]> {
   try {
     const res = await fetch(`${BACKEND}/api/products`, {
-      next: { revalidate: 300, tags: ["products"] },
+      next: { revalidate: 3600, tags: ["products"] },
       signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) return [];

@@ -52,6 +52,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const cached = readCache();
     if (cached) set({ user: cached, loading: false });
 
+    // إذا لم يكن لدى الزائر أي كوكيز تسجيل دخول، لا نرسل طلب للـ API نهائيًا لتوفير Function Invocations
+    if (typeof document !== "undefined") {
+      const c = document.cookie || "";
+      if (!c.includes("customer_token") && !c.includes("token")) {
+        writeCache(null);
+        set({ user: null, loading: false, initialized: true });
+        return;
+      }
+    }
+
     try {
       const res = await fetch("/api/auth/me");
       const data = await res.json();

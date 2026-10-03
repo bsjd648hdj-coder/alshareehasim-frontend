@@ -1,8 +1,19 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { slugConfigs } from "../../lib/categoryConfig";
 import type { Product } from "../../components/products/types";
 import { sortProducts } from "../../lib/sortProducts";
 import CategoryPageClient from "./CategoryPageClient";
+
+// Cache for 1 hour; edge revalidation with tag invalidation on updates
+export const revalidate = 3600;
+
+// Reject all non-defined slugs at the edge (stops bot scans like /wp-login.php, /.env from triggering functions)
+export const dynamicParams = false;
+
+export function generateStaticParams() {
+  return Object.keys(slugConfigs).map((slug) => ({ slug }));
+}
 
 const SITE_URL = "https://alshareehasim.com";
 const SITE_NAME = "لمسة الثابتة";
@@ -29,12 +40,14 @@ function filterCategoryProducts(products: Product[], slug: string): Product[] {
 }
 
 async function getCategoryProducts(slug: string): Promise<Product[]> {
+  const config = slugConfigs[slug];
+  if (!config) return [];
+
   try {
-    const config = slugConfigs[slug];
-    const brand = config?.filters.brand ?? "";
+    const brand = config.filters.brand ?? "";
     const query = brand ? `?brand=${encodeURIComponent(brand)}` : "";
     const res = await fetch(`${BACKEND}/api/products${query}`, {
-      next: { revalidate: 300, tags: ["products"] },
+      next: { revalidate: 3600, tags: ["products"] },
       signal: AbortSignal.timeout(4000),
     });
     if (!res.ok) return [];
@@ -50,8 +63,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const config = slugConfigs[slug];
 
-  const label = config?.label ?? slug;
-  const parentLabel = config?.parentLabel ?? "";
+  if (!config) {
+    return {
+      title: "الصفحة غير موجودة | 404",
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const label = config.label ?? slug;
+  const parentLabel = config.parentLabel ?? "";
 
   const title = parentLabel
     ? `${label} - ${parentLabel} | اشتري بالتقسيط من ${SITE_NAME}`
@@ -83,6 +103,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function CategorySlugPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  if (!slugConfigs[slug]) {
+    notFound();
+  }
   const products = await getCategoryProducts(slug);
   return <CategoryPageClient slug={slug} initialProducts={products} />;
 }

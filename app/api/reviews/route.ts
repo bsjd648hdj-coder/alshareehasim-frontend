@@ -3,13 +3,13 @@ import { getBackend } from "../admin/_lib";
 
 export async function GET() {
   const res = await fetch(`${getBackend()}/api/admin/reviews`, {
-    next: { revalidate: 300, tags: ["reviews"] },
+    next: { revalidate: 3600, tags: ["reviews"] },
   });
   const data = await res.json();
   return NextResponse.json(data, {
     status: res.status,
     headers: {
-      "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+      "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
     },
   });
 }

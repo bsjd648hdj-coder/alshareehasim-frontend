@@ -83,6 +83,7 @@ export default function ProductCard({
       <div className="relative h-full animate-fade-in-down">
         <Link
           href={`/product/${product._id}`}
+          prefetch={false}
           dir="rtl"
           className="group relative flex flex-col h-full rounded-[20px] overflow-hidden"
           style={{

@@ -12,10 +12,12 @@ const BACKEND =
   process.env.NEXT_PUBLIC_API_URL ||
   "https://alshareehasim-backend.vercel.app";
 
+export const revalidate = 3600;
+
 async function getSimCards(): Promise<Product[]> {
   try {
     const res = await fetch(`${BACKEND}/api/products?category=sim-cards`, {
-      next: { revalidate: 300, tags: ["products"] },
+      next: { revalidate: 3600, tags: ["products"] },
       signal: AbortSignal.timeout(4000),
     });
     

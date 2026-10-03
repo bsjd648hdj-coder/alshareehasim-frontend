@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import ProductPageClient from "./ProductPageClient";
+
+// Cache for 1 hour with ISR; revalidates on-demand when product is updated
+export const revalidate = 3600;
+export const dynamicParams = true;
 
 const BACKEND =
   process.env.BACKEND_URL ||
@@ -7,10 +12,25 @@ const BACKEND =
   "https://alshareehasim-backend.vercel.app";
 const SITE_URL = "https://alshareehasim.com";
 
+export async function generateStaticParams() {
+  try {
+    const res = await fetch(`${BACKEND}/api/products?limit=100`, {
+      next: { revalidate: 3600, tags: ["products"] },
+      signal: AbortSignal.timeout(4000),
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const list = Array.isArray(data) ? data : Array.isArray(data?.products) ? data.products : [];
+    return list.slice(0, 100).map((p: { _id: string }) => ({ id: String(p._id) }));
+  } catch {
+    return [];
+  }
+}
+
 async function getProduct(id: string) {
   try {
     const r = await fetch(`${BACKEND}/api/products/${id}`, {
-      next: { revalidate: 300, tags: ["products", `product-${id}`] },
+      next: { revalidate: 3600, tags: ["products", `product-${id}`] },
       signal: AbortSignal.timeout(4000),
     });
     return r.ok ? r.json() : null;
@@ -24,7 +44,10 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const product = await getProduct(id);
 
   if (!product) {
-    return { title: "المنتج غير موجود" };
+    return {
+      title: "المنتج غير موجود",
+      robots: { index: false, follow: false },
+    };
   }
 
   const siteName = "لمسة الثابتة";
@@ -80,6 +103,10 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const product = await getProduct(id);
+
+  if (!product) {
+    notFound();
+  }
 
   const siteName = "لمسة الثابتة";
   const price = product?.salePrice || product?.price || 0;

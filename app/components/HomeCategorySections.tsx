@@ -22,7 +22,7 @@ const BACKEND = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "h
 async function getSections(): Promise<BrandSection[]> {
   try {
     const settingsRes = await fetch(`${BACKEND}/api/admin/brands/home-settings`, {
-      next: { revalidate: 300, tags: ["brands-settings"] },
+      next: { revalidate: 3600, tags: ["brands-settings"] },
       signal: AbortSignal.timeout(3000),
     });
     if (!settingsRes.ok) return [];
@@ -35,7 +35,7 @@ async function getSections(): Promise<BrandSection[]> {
       visible.map(async (s) => {
         const res = await fetch(
           `${BACKEND}/api/products?brand=${encodeURIComponent(s.brand)}`,
-          { next: { revalidate: 300, tags: ["products"] }, signal: AbortSignal.timeout(3000) }
+          { next: { revalidate: 3600, tags: ["products"] }, signal: AbortSignal.timeout(3000) }
         );
         const data = res.ok ? await res.json() : [];
         const raw: Product[] = Array.isArray(data) ? data : Array.isArray(data.products) ? data.products : [];
@@ -78,6 +78,7 @@ export default async function HomeCategorySections() {
               </div>
               <Link
                 href={`/all-products?brand=${encodeURIComponent(sec.brand)}`}
+                prefetch={false}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-full transition-opacity hover:opacity-80"
                 style={{ background: "rgba(181,133,74,0.1)", border: "1px solid rgba(181,133,74,0.25)" }}
               >

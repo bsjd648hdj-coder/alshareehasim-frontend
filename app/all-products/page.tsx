@@ -19,7 +19,7 @@ async function getProducts(brand?: string): Promise<Product[]> {
       ? `${BACKEND}/api/products?brand=${encodeURIComponent(brand)}`
       : `${BACKEND}/api/products`;
     const res = await fetch(url, {
-      next: { revalidate: 300, tags: ["products"] },
+      next: { revalidate: 3600, tags: ["products"] },
       signal: AbortSignal.timeout(4000),
     });
     if (!res.ok) return [];

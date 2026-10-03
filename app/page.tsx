@@ -13,7 +13,7 @@ const SITE_URL = "https://alshareehasim.com";
 async function getReviews(): Promise<Review[]> {
   try {
     const res = await fetch(`${BACKEND}/api/admin/reviews`, {
-      next: { revalidate: 300, tags: ["reviews"] },
+      next: { revalidate: 3600, tags: ["reviews"] },
       signal: AbortSignal.timeout(3000),
     });
     if (!res.ok) return [];

@@ -33,7 +33,7 @@ export interface CompanyData {
 export async function getCompanyData(): Promise<CompanyData> {
   try {
     const res = await fetch(`${BACKEND}/api/admin/company/public`, {
-      next: { revalidate: 300, tags: ["company"] },
+      next: { revalidate: 3600, tags: ["company"] },
       signal: AbortSignal.timeout(3000),
     });
     if (!res.ok) return {};

@@ -191,6 +191,7 @@ export default function CategoryLandingClient({ title, emoji, subCategories, fil
               >
                 <Link
                   href={cat.href}
+                  prefetch={false}
                   className="group relative flex flex-col items-center gap-3 bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 hover:border-teal-300 hover:shadow-xl hover:shadow-teal-100/40 transition-all duration-300"
                 >
                   <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-teal-50 to-emerald-50 flex items-center justify-center text-2xl sm:text-3xl group-hover:from-teal-100 group-hover:to-emerald-100 transition-all shadow-sm group-hover:scale-110 group-hover:shadow-md duration-300">
