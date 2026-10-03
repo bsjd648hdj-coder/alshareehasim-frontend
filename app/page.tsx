@@ -18,7 +18,9 @@ async function getReviews(): Promise<Review[]> {
     });
     if (!res.ok) return [];
     const data = await res.json();
-    return Array.isArray(data) ? data : [];
+    // الـ API يرجع { reviews: [...], total, page, pages }
+    const list = Array.isArray(data) ? data : (data?.reviews ?? []);
+    return Array.isArray(list) ? list : [];
   } catch {
     return [];
   }

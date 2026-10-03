@@ -38,7 +38,10 @@ export default function CustomerReviews({ initialReviews = [] }: { initialReview
     if (initialReviews.length > 0) return;
     fetch("/api/reviews")
       .then((r) => r.json())
-      .then((data) => Array.isArray(data) && setReviews(data))
+      .then((data) => {
+        const list = Array.isArray(data) ? data : (data?.reviews ?? []);
+        if (Array.isArray(list) && list.length > 0) setReviews(list);
+      })
       .catch(() => {});
   }, [initialReviews.length]);
 
