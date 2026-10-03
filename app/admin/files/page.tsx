@@ -16,6 +16,14 @@ export default function FilesPage() {
     setTimeout(() => setMsgs((p) => ({ ...p, [section]: "" })), 3000);
   }
 
+  async function revalidateCompany() {
+    try {
+      await fetch("/api/revalidate?tag=company", { method: "POST" });
+    } catch {
+      // non-critical
+    }
+  }
+
   // Set-based uploading state — supports concurrent uploads without race condition
   const [uploadingSet, setUploadingSet] = useState<Set<string>>(new Set());
   function startUploading(key: string) { setUploadingSet((p) => new Set(p).add(key)); }
@@ -60,7 +68,7 @@ export default function FilesPage() {
       const r = await fetch(`/api/admin/company/footer-image/qrImage`, { method: "POST", credentials: "include", body: fd });
       const json = await r.json();
       if (!r.ok) { showMsg("qr", `❌ ${json.error || "فشل الرفع"}`); return; }
-      if (json.url) { setData((p) => ({ ...p, qrImage: json.url })); bumpKey("qr"); }
+      if (json.url) { setData((p) => ({ ...p, qrImage: json.url })); bumpKey("qr"); revalidateCompany(); }
     } catch { showMsg("qr", "❌ خطأ في الشبكة"); }
     finally { stopUploading("qr"); }
   }
@@ -73,7 +81,7 @@ export default function FilesPage() {
       const r = await fetch(`/api/admin/company/footer-image/img1`, { method: "POST", credentials: "include", body: fd });
       const json = await r.json();
       if (!r.ok) { showMsg("s1", `❌ ${json.error || "فشل الرفع"}`); return; }
-      if (json.url) { setData((p) => ({ ...p, img1: json.url })); bumpKey("img1"); }
+      if (json.url) { setData((p) => ({ ...p, img1: json.url })); bumpKey("img1"); revalidateCompany(); }
     } catch { showMsg("s1", "❌ خطأ في الشبكة"); }
     finally { stopUploading("img1"); }
   }
@@ -86,7 +94,7 @@ export default function FilesPage() {
       const r = await fetch(`/api/admin/company/footer-image/img2`, { method: "POST", credentials: "include", body: fd });
       const json = await r.json();
       if (!r.ok) { showMsg("s2", `❌ ${json.error || "فشل الرفع"}`); return; }
-      if (json.url) { setData((p) => ({ ...p, img2: json.url })); bumpKey("img2"); }
+      if (json.url) { setData((p) => ({ ...p, img2: json.url })); bumpKey("img2"); revalidateCompany(); }
     } catch { showMsg("s2", "❌ خطأ في الشبكة"); }
     finally { stopUploading("img2"); }
   }
@@ -99,7 +107,7 @@ export default function FilesPage() {
       const r = await fetch(`/api/admin/company/footer-file/qrFile`, { method: "POST", credentials: "include", body: fd });
       const json = await r.json();
       if (!r.ok) { showMsg("qr", `❌ ${json.error || "فشل الرفع"}`); return; }
-      if (json.url) setData((p) => ({ ...p, qrFile: json.url }));
+      if (json.url) setData((p) => ({ ...p, qrFile: json.url })); revalidateCompany();
     } catch { showMsg("qr", "❌ خطأ في الشبكة"); }
     finally { stopUploading("qrFile"); }
   }
@@ -112,7 +120,7 @@ export default function FilesPage() {
       const r = await fetch(`/api/admin/company/footer-file/file1`, { method: "POST", credentials: "include", body: fd });
       const json = await r.json();
       if (!r.ok) { showMsg("s1", `❌ ${json.error || "فشل الرفع"}`); return; }
-      if (json.url) setData((p) => ({ ...p, file1: json.url }));
+      if (json.url) setData((p) => ({ ...p, file1: json.url })); revalidateCompany();
     } catch { showMsg("s1", "❌ خطأ في الشبكة"); }
     finally { stopUploading("file1"); }
   }
@@ -125,7 +133,7 @@ export default function FilesPage() {
       const r = await fetch(`/api/admin/company/footer-file/file2`, { method: "POST", credentials: "include", body: fd });
       const json = await r.json();
       if (!r.ok) { showMsg("s2", `❌ ${json.error || "فشل الرفع"}`); return; }
-      if (json.url) setData((p) => ({ ...p, file2: json.url }));
+      if (json.url) setData((p) => ({ ...p, file2: json.url })); revalidateCompany();
     } catch { showMsg("s2", "❌ خطأ في الشبكة"); }
     finally { stopUploading("file2"); }
   }
@@ -146,6 +154,7 @@ export default function FilesPage() {
           return { ...p, footerItems: items };
         });
         bumpKey(key);
+        revalidateCompany();
       }
     } catch { showMsg("items", "❌ خطأ في الشبكة"); }
     finally { stopUploading(key); }
@@ -164,7 +173,7 @@ export default function FilesPage() {
         const items = [...p.footerItems];
         items[index] = { ...items[index], file: json.url };
         return { ...p, footerItems: items };
-      });
+      }); revalidateCompany();
     } catch { showMsg("items", "❌ خطأ في الشبكة"); }
     finally { stopUploading(key); }
   }
@@ -183,6 +192,7 @@ export default function FilesPage() {
       const json = await r.json();
       if (!r.ok) { showMsg(section, `❌ ${json.error || "فشل الحذف"}`); return; }
       setData((p) => ({ ...p, [field]: "" }));
+      revalidateCompany();
     } catch { showMsg(section, "❌ خطأ في الشبكة"); }
   }
 
@@ -192,6 +202,7 @@ export default function FilesPage() {
       const json = await r.json();
       if (!r.ok) { showMsg(section, `❌ ${json.error || "فشل الحذف"}`); return; }
       setData((p) => ({ ...p, [field]: "" }));
+      revalidateCompany();
     } catch { showMsg(section, "❌ خطأ في الشبكة"); }
   }
 
@@ -204,7 +215,12 @@ export default function FilesPage() {
         body: JSON.stringify(body),
       });
       const json = await r.json();
-      showMsg(section, r.ok ? "✅ تم الحفظ" : `❌ ${json.error || "حدث خطأ"}`);
+      if (r.ok) {
+        showMsg(section, "✅ تم الحفظ");
+        revalidateCompany();
+      } else {
+        showMsg(section, `❌ ${json.error || "حدث خطأ"}`);
+      }
     } catch { showMsg(section, "❌ خطأ في الشبكة"); }
     finally { setSavingSection(null); }
   }
