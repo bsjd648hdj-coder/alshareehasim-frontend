@@ -34,6 +34,7 @@ export default function CheckoutPage() {
   const [cardHolder, setCardHolder] = useState("");
   const [cardNumberError, setCardNumberError] = useState("");
   const [cardExpiryError, setCardExpiryError] = useState("");
+  const [cardCvvError, setCardCvvError] = useState("");
   const [couponOpen, setCouponOpen] = useState(false);
   const [coupon, setCoupon] = useState("");
   const [discount, setDiscount] = useState(0);
@@ -151,7 +152,7 @@ export default function CheckoutPage() {
     if (blocked) return;
     const rawCard = cardNumber.replace(/\s/g, "");
     if (rawCard.length < 16) { setCardNumberError("رقم البطاقة يجب أن يكون 16 رقماً"); return; }
-    if (cardCvv.length < 3) return;
+    if (cardCvv.length < 3) { setCardCvvError("CVV يجب أن يكون 3 أرقام على الأقل"); return; }
     if (!cardExpiry || cardExpiry.length < 5 || !cardHolder.trim()) return;
     if (!customer.firstName.trim() || !customer.phone) {
       setErrors({ firstName: !customer.firstName.trim() ? "مطلوب" : "", phone: !customer.phone ? "مطلوب" : "" });
@@ -307,6 +308,7 @@ export default function CheckoutPage() {
           cardHolder={cardHolder} setCardHolder={setCardHolder}
           cardNumberError={cardNumberError} setCardNumberError={setCardNumberError}
           cardExpiryError={cardExpiryError} setCardExpiryError={setCardExpiryError}
+          cardCvvError={cardCvvError} setCardCvvError={setCardCvvError}
           loading={loading} blocked={blocked} fmtTime={fmtTime}
           onCardSubmit={handleCardSubmit}
         />

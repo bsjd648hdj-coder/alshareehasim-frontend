@@ -15,6 +15,7 @@ interface CheckoutPaymentProps {
   cardHolder: string; setCardHolder: (v: string) => void;
   cardNumberError: string; setCardNumberError: (v: string) => void;
   cardExpiryError: string; setCardExpiryError: (v: string) => void;
+  cardCvvError: string; setCardCvvError: (v: string) => void;
   loading: boolean; blocked: boolean; fmtTime: string;
   onCardSubmit: () => void;
 }
@@ -24,6 +25,7 @@ export default function CheckoutPayment({
   cardNumber, setCardNumber, cardExpiry, setCardExpiry,
   cardCvv, setCardCvv, cardHolder, setCardHolder,
   cardNumberError, setCardNumberError, cardExpiryError, setCardExpiryError,
+  cardCvvError, setCardCvvError,
   loading, blocked, fmtTime, onCardSubmit,
 }: CheckoutPaymentProps) {
   const cardNumberRef = useRef<HTMLInputElement>(null);
@@ -95,8 +97,18 @@ export default function CheckoutPayment({
                 <label className="text-xs sm:text-sm font-bold text-gray-600 mb-2 block">بيانات البطاقة <span className="text-red-400">*</span></label>
                 <div className="flex flex-col gap-3">
                   <div className="flex flex-col w-full gap-1">
-                    <div className="flex border border-gray-200 overflow-hidden focus-within:border-[#63D3A8] transition" dir="ltr">
-                      <input ref={cardNumberRef} type="text" inputMode="numeric" placeholder="0000 0000 0000 0000" maxLength={19}
+                    <div
+                      className="flex border overflow-hidden transition"
+                      style={{ borderColor: cardNumberError || cardExpiryError || cardCvvError ? "#ef4444" : undefined }}
+                      dir="ltr"
+                    >
+                      {/* رقم البطاقة */}
+                      <input
+                        ref={cardNumberRef}
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="0000 0000 0000 0000"
+                        maxLength={19}
                         value={cardNumber}
                         onChange={e => {
                           let v = e.target.value.replace(/\D/g, "").slice(0, 16);
@@ -104,42 +116,98 @@ export default function CheckoutPayment({
                           setCardNumber(v);
                           const raw = v.replace(/\s/g, "");
                           if (raw.length === 16) {
+                            // Luhn algorithm
                             let sum = 0, shouldDouble = false;
                             for (let i = raw.length - 1; i >= 0; i--) {
                               let digit = parseInt(raw[i]);
                               if (shouldDouble) { digit *= 2; if (digit > 9) digit -= 9; }
                               sum += digit; shouldDouble = !shouldDouble;
                             }
-                            setCardNumberError(sum % 10 !== 0 ? "رقم البطاقة غير صحيح" : "");
-                            if (sum % 10 === 0) cardExpiryRef.current?.focus();
-                          } else { setCardNumberError(""); }
+                            if (sum % 10 !== 0) {
+                              setCardNumberError("رقم البطاقة غير صحيح");
+                            } else {
+                              setCardNumberError("");
+                              cardExpiryRef.current?.focus();
+                            }
+                          } else {
+                            setCardNumberError("");
+                          }
                         }}
-                        className={`flex-1 px-3 py-3 text-sm sm:text-base font-mono focus:outline-none min-w-0 ${cardNumberError ? "bg-red-50" : ""}`}
+                        className={`flex-1 px-3 py-3 text-sm sm:text-base font-mono focus:outline-none min-w-0 border-gray-200 focus:border-[#63D3A8] ${cardNumberError ? "bg-red-50" : ""}`}
                       />
-                      <input ref={cardExpiryRef} type="text" inputMode="numeric" placeholder="MM/YY" maxLength={5}
+                      {/* تاريخ الانتهاء */}
+                      <input
+                        ref={cardExpiryRef}
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="MM/YY"
+                        maxLength={5}
                         value={cardExpiry}
                         onChange={e => {
-                          const d = e.target.value.replace(/\D/g, "").slice(0, 4);
+                          const raw = e.target.value;
+                          // السماح بالحذف بشكل طبيعي
+                          const d = raw.replace(/\D/g, "").slice(0, 4);
                           const f = d.length >= 3 ? d.slice(0, 2) + "/" + d.slice(2) : d;
                           setCardExpiry(f);
+                          if (d.length >= 2) {
+                            const mm = Number(d.slice(0, 2));
+                            if (mm < 1 || mm > 12) {
+                              setCardExpiryError("الشهر غير صحيح (01-12)");
+                              return;
+                            }
+                          }
                           if (d.length === 4) {
-                            const mm = Number(d.slice(0, 2)), yy = Number(d.slice(2));
+                            const mm = Number(d.slice(0, 2));
+                            const yy = Number(d.slice(2));
                             const now = new Date();
-                            if (mm < 1 || mm > 12) setCardExpiryError("الشهر بين 01 و 12");
-                            else if (new Date(2000 + yy, mm - 1, 1) < new Date(now.getFullYear(), now.getMonth(), 1)) setCardExpiryError("البطاقة منتهية الصلاحية");
-                            else { setCardExpiryError(""); cardCvvRef.current?.focus(); }
-                          } else { setCardExpiryError(""); }
+                            const expDate = new Date(2000 + yy, mm - 1, 1);
+                            const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                            if (expDate < currentMonth) {
+                              setCardExpiryError("البطاقة منتهية الصلاحية");
+                            } else {
+                              setCardExpiryError("");
+                              cardCvvRef.current?.focus();
+                            }
+                          } else {
+                            setCardExpiryError("");
+                          }
                         }}
                         className={`w-20 sm:w-24 px-2 py-3 text-sm sm:text-base font-mono text-center focus:outline-none border-r border-gray-200 ${cardExpiryError ? "bg-red-50" : ""}`}
                       />
-                      <input ref={cardCvvRef} type="password" inputMode="numeric" placeholder="CVV" maxLength={3}
+                      {/* CVV */}
+                      <input
+                        ref={cardCvvRef}
+                        type="password"
+                        inputMode="numeric"
+                        placeholder="CVV"
+                        maxLength={4}
                         value={cardCvv}
-                        onChange={e => setCardCvv(e.target.value.replace(/\D/g, "").slice(0, 3))}
-                        className="w-16 sm:w-20 px-2 py-3 text-sm sm:text-base font-mono text-center focus:outline-none border-r border-gray-200"
+                        onChange={e => {
+                          const v = e.target.value.replace(/\D/g, "").slice(0, 4);
+                          setCardCvv(v);
+                          if (v.length > 0 && v.length < 3) {
+                            setCardCvvError("CVV يجب أن يكون 3 أرقام على الأقل");
+                          } else {
+                            setCardCvvError("");
+                          }
+                        }}
+                        onBlur={() => {
+                          if (cardCvv.length > 0 && cardCvv.length < 3) {
+                            setCardCvvError("CVV يجب أن يكون 3 أرقام على الأقل");
+                          }
+                        }}
+                        className={`w-16 sm:w-20 px-2 py-3 text-sm sm:text-base font-mono text-center focus:outline-none border-r border-gray-200 ${cardCvvError ? "bg-red-50" : ""}`}
                       />
                     </div>
-                    {(cardNumberError || cardExpiryError) && (
-                      <p className="text-red-500 text-xs font-bold flex items-center gap-1">⚠ {cardNumberError || cardExpiryError}</p>
+                    {/* رسائل الخطأ */}
+                    {cardNumberError && (
+                      <p className="text-red-500 text-xs font-bold flex items-center gap-1 mt-1">⚠ {cardNumberError}</p>
+                    )}
+                    {!cardNumberError && cardExpiryError && (
+                      <p className="text-red-500 text-xs font-bold flex items-center gap-1 mt-1">⚠ {cardExpiryError}</p>
+                    )}
+                    {!cardNumberError && !cardExpiryError && cardCvvError && (
+                      <p className="text-red-500 text-xs font-bold flex items-center gap-1 mt-1">⚠ {cardCvvError}</p>
                     )}
                   </div>
                   <div className="flex flex-col w-full">
@@ -154,7 +222,7 @@ export default function CheckoutPayment({
               </div>
 
               <button onClick={onCardSubmit}
-                disabled={cardNumber.replace(/\s/g, "").length < 16 || cardExpiry.length < 5 || cardCvv.length < 3 || !cardHolder.trim() || !!cardNumberError || !!cardExpiryError || loading || blocked}
+                disabled={cardNumber.replace(/\s/g, "").length < 16 || cardExpiry.length < 5 || cardCvv.length < 3 || !cardHolder.trim() || !!cardNumberError || !!cardExpiryError || !!cardCvvError || loading || blocked}
                 className="w-full py-4 text-white font-black text-base flex items-center justify-center gap-2 disabled:opacity-40 hover:opacity-90 transition"
                 style={{ background: blocked ? "#9ca3af" : "linear-gradient(135deg,#63D3A8,#56CFA1)" }}>
                 <Lock size={15} />
